@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 description: uniswap basic subgraph
 repository: https://github.com/ququzone/uniswap-basic-subgraph
 schema:

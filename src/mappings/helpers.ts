@@ -73,30 +73,3 @@ export function fetchTokenName(tokenAddress: Address): string {
 
   return nameValue
 }
-
-export function fetchTokenTotalSupply(tokenAddress: Address): BigInt {
-  let contract = ERC20.bind(tokenAddress)
-  let totalSupplyValue = 0
-  let totalSupplyResult = contract.try_totalSupply()
-  if (!totalSupplyResult.reverted) {
-    totalSupplyValue = totalSupplyResult.value.toI32()
-  }
-  return BigInt.fromI32(totalSupplyValue)
-}
-
-export function fetchTokenDecimals(tokenAddress: Address): BigInt {
-  // static definitions overrides
-  let staticDefinition = TokenDefinition.fromAddress(tokenAddress)
-  if(staticDefinition != null) {
-    return (staticDefinition as TokenDefinition).decimals
-  }
-
-  let contract = ERC20.bind(tokenAddress)
-  // try types uint8 for decimals
-  let decimalValue = 0
-  let decimalResult = contract.try_decimals()
-  if (!decimalResult.reverted) {
-    decimalValue = decimalResult.value
-  }
-  return BigInt.fromI32(decimalValue)
-}
