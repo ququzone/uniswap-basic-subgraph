@@ -5,8 +5,8 @@ type UniswapFactory @entity {
   # pair info
   pairCount: Int!
 
-  # transactions
-  txCount: BigInt!
+  lastBlock: BigInt!
+  completed: Boolean!
 }
 
 type Token @entity {

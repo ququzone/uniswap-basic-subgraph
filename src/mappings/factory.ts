@@ -12,6 +12,10 @@ import {
 
 export function handleNewPair(event: PairCreated): void {
   if(event.block.number.gt(END_BLOCK)) {
+    let factory = UniswapFactory.load(FACTORY_ADDRESS)
+    factory!.completed = true
+    factory!.lastBlock = event.block.number
+    factory!.save()
     return;
   }
 
@@ -20,9 +24,10 @@ export function handleNewPair(event: PairCreated): void {
   if (factory === null) {
     factory = new UniswapFactory(FACTORY_ADDRESS)
     factory.pairCount = 0
-    factory.txCount = ZERO_BI
+    factory.completed = false
   }
   factory.pairCount = factory.pairCount + 1
+  factory.lastBlock = event.block.number
   factory.save()
 
   // create the tokens

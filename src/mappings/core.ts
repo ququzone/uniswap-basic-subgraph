@@ -1,16 +1,21 @@
 import { Swap, Transfer } from "../types/templates/Pair/Pair"
-import { Swapper, UserLiquidity } from '../types/schema'
+import { Swapper, UniswapFactory, UserLiquidity } from '../types/schema'
 
 import { 
   ADDRESS_ZERO,
   END_BLOCK,
+  FACTORY_ADDRESS,
   ONE_BI,
   ZERO_BI,
 } from "./helpers"
 import { BigInt, Bytes } from "@graphprotocol/graph-ts"
 
 export function handleSwap(event: Swap): void {
+  let factory = UniswapFactory.load(FACTORY_ADDRESS)
   if(event.block.number.gt(END_BLOCK)) {
+    factory!.completed = true
+    factory!.lastBlock = event.block.number
+    factory!.save()
     return;
   }
 
@@ -21,6 +26,9 @@ export function handleSwap(event: Swap): void {
   }
   swapper.count = swapper.count.plus(ONE_BI)
   swapper.save()
+
+  factory!.lastBlock = event.block.number
+  factory!.save()
 }
 
 function saveUserLiquidity(pair: string, account: string, amount: BigInt): void {
@@ -36,17 +44,23 @@ function saveUserLiquidity(pair: string, account: string, amount: BigInt): void 
 }
 
 export function handleTransfer(event: Transfer): void {
+  let factory = UniswapFactory.load(FACTORY_ADDRESS)!
   if(event.block.number.gt(END_BLOCK)) {
+    factory!.completed = true
+    factory!.lastBlock = event.block.number
+    factory!.save()
     return;
   }
-
   let from = event.params.from.toHexString()
-  if (from !== ADDRESS_ZERO) {
+  if (from != ADDRESS_ZERO && from != event.address.toHexString()) {
     saveUserLiquidity(event.address.toHexString(), from, event.params.value.neg())
   }
 
   let to = event.params.to.toHexString()
-  if (from !== ADDRESS_ZERO) {
+  if (to != ADDRESS_ZERO && to != event.address.toHexString()) {
     saveUserLiquidity(event.address.toHexString(), to, event.params.value)
   }
+
+  factory!.lastBlock = event.block.number
+  factory!.save()
 }

@@ -51,13 +51,22 @@ export class UniswapFactory extends Entity {
     this.set("pairCount", Value.fromI32(value));
   }
 
-  get txCount(): BigInt {
-    let value = this.get("txCount");
+  get lastBlock(): BigInt {
+    let value = this.get("lastBlock");
     return value!.toBigInt();
   }
 
-  set txCount(value: BigInt) {
-    this.set("txCount", Value.fromBigInt(value));
+  set lastBlock(value: BigInt) {
+    this.set("lastBlock", Value.fromBigInt(value));
+  }
+
+  get completed(): boolean {
+    let value = this.get("completed");
+    return value!.toBoolean();
+  }
+
+  set completed(value: boolean) {
+    this.set("completed", Value.fromBoolean(value));
   }
 }
 
