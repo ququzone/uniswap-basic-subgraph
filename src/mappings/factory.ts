@@ -3,6 +3,7 @@ import { PairCreated } from '../types/Factory/Factory'
 import { Pair, Token, UniswapFactory } from '../types/schema'
 import { Pair as PairTemplate } from '../types/templates'
 import {
+  END_BLOCK,
   FACTORY_ADDRESS,
   fetchTokenDecimals,
   fetchTokenName,
@@ -13,6 +14,10 @@ import {
 } from './helpers'
 
 export function handleNewPair(event: PairCreated): void {
+  if(event.block.number.gt(END_BLOCK)) {
+    return;
+  }
+
   // load factory (create if first exchange)
   let factory = UniswapFactory.load(FACTORY_ADDRESS)
   if (factory === null) {

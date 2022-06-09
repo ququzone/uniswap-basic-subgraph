@@ -41,3 +41,19 @@ type Pair @entity {
   createdAtTimestamp: BigInt!
   createdAtBlockNumber: BigInt!
 }
+
+type Swapper @entity {
+  # user address
+  id: ID!
+
+  count: BigInt!
+}
+
+type UserLiquidity @entity {
+  # user address
+  id: ID!
+
+  user: Bytes!
+  pair: Bytes!
+  liquidity: BigInt!
+}

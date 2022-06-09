@@ -4,6 +4,7 @@ import { ERC20SymbolBytes } from '../types/Factory/ERC20SymbolBytes'
 import { ERC20NameBytes } from '../types/Factory/ERC20NameBytes'
 import { TokenDefinition } from './tokenDefinition'
 
+export const END_BLOCK = BigInt.fromI64(17819950)
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 export const FACTORY_ADDRESS = '0xda257cBe968202Dea212bBB65aB49f174Da58b9D'
 
@@ -75,12 +76,12 @@ export function fetchTokenName(tokenAddress: Address): string {
 
 export function fetchTokenTotalSupply(tokenAddress: Address): BigInt {
   let contract = ERC20.bind(tokenAddress)
-  let totalSupplyValue = null
+  let totalSupplyValue = 0
   let totalSupplyResult = contract.try_totalSupply()
   if (!totalSupplyResult.reverted) {
-    totalSupplyValue = totalSupplyResult as i32
+    totalSupplyValue = totalSupplyResult.value.toI32()
   }
-  return BigInt.fromI32(totalSupplyValue as i32)
+  return BigInt.fromI32(totalSupplyValue)
 }
 
 export function fetchTokenDecimals(tokenAddress: Address): BigInt {
@@ -92,10 +93,10 @@ export function fetchTokenDecimals(tokenAddress: Address): BigInt {
 
   let contract = ERC20.bind(tokenAddress)
   // try types uint8 for decimals
-  let decimalValue = null
+  let decimalValue = 0
   let decimalResult = contract.try_decimals()
   if (!decimalResult.reverted) {
     decimalValue = decimalResult.value
   }
-  return BigInt.fromI32(decimalValue as i32)
+  return BigInt.fromI32(decimalValue)
 }

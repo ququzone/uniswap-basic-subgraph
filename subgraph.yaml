@@ -1,6 +1,6 @@
 specVersion: 0.0.2
-description: Gravatar for Ethereum
-repository: https://github.com/graphprotocol/example-subgraph
+description: uniswap basic subgraph
+repository: https://github.com/ququzone/uniswap-basic-subgraph
 schema:
   file: ./schema.graphql
 dataSources:
@@ -51,13 +51,13 @@ templates:
         - name: Factory
           file: ./abis/Factory.json
       eventHandlers:
-        - event: Mint(indexed address,uint256,uint256)
-          handler: handleMint
-        - event: Burn(indexed address,uint256,uint256,indexed address)
-          handler: handleBurn
+        # - event: Mint(indexed address,uint256,uint256)
+        #   handler: handleMint
+        # - event: Burn(indexed address,uint256,uint256,indexed address)
+        #   handler: handleBurn
         - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
           handler: handleSwap
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-        - event: Sync(uint112,uint112)
-          handler: handleSync
+        # - event: Sync(uint112,uint112)
+        #   handler: handleSync
