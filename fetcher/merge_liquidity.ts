@@ -1,6 +1,8 @@
-import { request, gql } from 'graphql-request'
 import * as path from 'path'
+import * as fs from 'fs'
 import * as csvWriter from 'csv-writer'
+import csvParser from 'csv-parser'
+import { Decimal } from 'decimal.js';
 
 const pairs = [{
   name: "CIOTX-WIOTX",
@@ -84,42 +86,54 @@ const pairs = [{
   liquidity: 30440,
 }]
 
-const query = gql`
-  query userLiquidities($pair: String!, $skip: Int!) {
-    userLiquidities(where: {pair: $pair}, first: 1000, skip: $skip orderBy: liquidity orderDirection: desc) {
-      user
-      liquidity
-    }
-  }
-`
-
 async function main() {
-  for (let p = 0; p < pairs.length; p++) {
-    const writer = csvWriter.createObjectCsvWriter({
-      path: path.resolve(__dirname, `${pairs[p].name}.csv`),
-      header: [
-        { id: 'account', title: 'account' },
-        { id: 'liquidity', title: 'liquidity' },
-      ],
+  const results = {}
+  for (let i = 0; i < pairs.length; i++) {
+    await new Promise((resolve, reject) => {
+      const totalValue = new Decimal(pairs[i].liquidity)
+      let total = new Decimal(0)
+      // @ts-ignore
+      const records = []
+      fs.createReadStream(path.resolve(__dirname, `data/${pairs[i].name}.csv`))
+        .pipe(csvParser())
+        // @ts-ignore
+        .on('data', (data) => {
+          const liquidity = new Decimal(data.liquidity)
+          records.push({account: data.account, liquidity: liquidity})
+          total = total.add(liquidity)
+        })
+        .on('end', () => {
+          const per = totalValue.div(total)
+          for (let r = 0; r < records.length; r++) {
+            // @ts-ignore
+            const uv = per.mul(records[r].liquidity)
+            // @ts-ignore
+            if (results[records[r].account]) {
+              // @ts-ignore
+              results[records[r].account] = new Decimal(results[records[r].account]).add(uv).toFixed(5)
+            } else {
+              // @ts-ignore
+              results[records[r].account] = uv.toFixed(5)
+            }
+          }
+          resolve(true)
+        })
     })
-  
-    const records = []
-    let i = 0
-    let skip = 0
-    while (true) {
-      let c = 0
-      const response = await request('https://graph.mainnet.iotex.io/subgraphs/name/mimo/basic', query, {pair: pairs[p].address, skip: skip})
-      for (; c < response.userLiquidities.length; c++) {
-        records.push({account: response.userLiquidities[c].user, liquidity: response.userLiquidities[c].liquidity})
-      }
-      if (c != 1000) {
-        break
-      }
-      i++
-      skip = 1000 * i
-    }
-    await writer.writeRecords(records)
   }
+
+  const writer = csvWriter.createObjectCsvWriter({
+    path: path.resolve(__dirname, `total.csv`),
+    header: [
+      { id: 'account', title: 'account' },
+      { id: 'liquidity', title: 'liquidity' },
+    ],
+  })
+  // @ts-ignore
+  const d = Object.entries(results).sort((a, b) => new Number(b[1]) - new Number(a[1])).map(a => {
+    // @ts-ignore
+    return {account: a[0], liquidity: `${a[1]}`}
+  })
+  await writer.writeRecords(d)
 }
 
 main()
